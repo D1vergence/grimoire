@@ -15,7 +15,7 @@ os.system('title 客户端')
 scr_size=(1366,768)
 bg_img='bg.png'
 server_addr=('127.0.0.1',8003)
-hero=2
+hero=1
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -46,11 +46,10 @@ def my_rec(sock):
     data = recvall(sock, int(length))
     return data
 
-def write_word(word,x,y):
+def write_word(word,x,y,color=(255,255,255)):
     if type(word)==int or type(word)==float:
         word='%.2f'%word
-    color=(255,255,255)
-    if word=='0.00': 
+    if word=='0.00':
         color=(222,222,0)
     font_surface = font.render(word, True, (0,0,0))
     screen.blit(font_surface, (x  , y ))
@@ -70,7 +69,7 @@ def suc(p):
 
    
 model_pool=[]
-info=['',()]
+info=['',[],[0,0],[0,0]]
 
 #和服务器数据交换这地方我真不知道怎么写2333333
 def one_exchange(sock):
@@ -117,19 +116,30 @@ while True:
                 data='002'+suc(p)
             if event.key==ord('r'):
                 data='003'+suc(p)
+            if event.key==ord('s'):
+                data='hod'+suc(p)
             sock2.send(data.encode())
 
     screen.blit(background, (0,0))
     
     for i in model_pool:
         i.draww(screen)
+    # print(info)
+    write_word(info[0],600,680)
+    write_word('%d'%info[2][0],600,720,color=(255,150,150))
+    write_word('/',            640,720)
+    write_word('%d'%info[2][1],652,720,color=(255,150,150))
     
-    write_word(info[0],600,700)
+    write_word('%d'%info[3][0],600,740,color=(170,170,255))
+    write_word('/',            640,740)
+    write_word('%d'%info[3][1],652,740,color=(170,170,255))
     
-    x=1300
-    y=600
+    x=1200
+    y=440
     for i in info[1]:
+        y+=40
+        write_word(i[0],x,y)
         y+=30
-        write_word(i,x,y)
+        write_word(i[1],x,y,color=(162,162,255))
 
     pygame.display.update()

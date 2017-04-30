@@ -39,6 +39,9 @@ def server(address):
                 you.ctrler.mov(int(s[3:8]),int(s[8:13]))
             if s[:3].isdigit():
                 you.ctrler.magic(int(s[:3]),int(s[3:8]),int(s[8:13]))
+            if s[:3]==b'hod':
+                you.ctrler.hold()
+                
         print('与',addr,'的连接断开了')
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

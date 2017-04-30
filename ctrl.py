@@ -10,11 +10,17 @@ class player():
         
     @property
     def info(self):
-        info=('233',[])
-        if not self.me: 
+        info=['233',[],[0,0],[0,0]]
+        if not self.me:
             return info
         for i in self.me.magic:
-            info[1].append(i.cool_down_left)
+            try:
+                name=i.name
+            except:
+                name=i.__class__.__name__
+            info[1].append((name,i.cool_down_left))
+        info[2]=[self.me.hp, self.me.maxhp]
+        info[3]=[self.me.mana, self.me.max_mana]
         return info
     
     def set_hero(self,n):
@@ -37,4 +43,6 @@ class ctrler():
         self.me.cmd(x,y)
     def magic(self,l,x,y):
         self.me.cast(self.me.magic[l], x, y)
+    def hold(self):
+        self.me.cmd('hold')
     

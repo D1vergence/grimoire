@@ -25,24 +25,26 @@ class unit():
         self.hp=self.maxhp
         self.max_mana=400
         self.mana=self.max_mana
-        self.mana_rc=25 #回魔速度
-        self.die_model=None
+        self.mana_rc=0         #回魔速度
+        self.hp_rc=0          #回血速度
+        self.die_model=None     #死亡时播放的模型
         self.now_cmd=('hold',None)
+        self.face=vec(0,0)      #朝向
         
     def birth(self):
         pass
 #绘图
     def draw(self,screen):
-        for i in self.model[::-1]: #不知道怎么让血条画在上面23333
+        for i in self.model:
             i.draw(screen)
 #时间经过
     def time_pass(self,t):
         self.draw(screen)
         
         #每秒回复魔力
-        self.mana+=t*self.mana_rc
-        if self.mana>self.max_mana:
-            self.mana=self.max_mana
+        self.mana=min(self.mana+t*self.mana_rc,self.max_mana)
+        self.hp  =min(self.hp  +t*self.hp_rc  ,self.maxhp  )
+        
         
         #自身行为经过
         if self.now_cmd[0]=='hold':
@@ -51,6 +53,7 @@ class unit():
             v_tar=self.now_cmd[1]
             v=v_tar-self.v
             v.normalize()
+            self.face=v
             go=v*t*self.get_speed()
             if go.mo()>(v_tar-self.v).mo():
                 self.v=v_tar
@@ -257,10 +260,10 @@ class arrow_to_u(arrow):
             self.die()
                     
 class arrow_to_d(arrow):
-    def __init__(self,x,y):
+    def __init__(self,x,y,set_model=model.箭头()):
         super().__init__()
         self.speed=400
-        self.model.append(model.火球())
+        self.model.append(set_model)
         self.add_ef(effect.kill_out_screen())
         self.p_v=vec(x,y)
         self.die_model=model.爆炸(80,0.2)
@@ -290,6 +293,8 @@ class hero(real_unit):
         self.speed=220
         self.maxhp=300
         self.hp=300
+        self.mana_rc=25
+        self.hp_rc=2
         self.add_ef(effect.dam_imm(t=2))
         
         
@@ -300,9 +305,9 @@ class bird(hero):
         # self.add_ef(effect.silence())
         
         self.magic.append(magic.射箭())
-        self.magic.append(magic.暗影冲锋())
+        self.magic.append(magic.大量射箭())
         self.magic.append(magic.气球炸弹())
-        self.magic.append(magic.净化光线())
+        self.magic.append(magic.若风一指())
         
         self.model.append(model.头像(name='bird'))
         

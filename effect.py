@@ -227,9 +227,9 @@ class kill_out_screen(effect):
 
     def time_pass(self,time):
         effect.time_pass(self,time)
-        if not -200<self.owner.v.y<900:
+        if not -200<self.owner.v.y<1000:
             self.owner.die()
-        if not -200<self.owner.v.x<1500:
+        if not -200<self.owner.v.x<1600:
             self.owner.die()
 
 #不能离开屏幕

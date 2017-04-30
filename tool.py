@@ -1,4 +1,5 @@
 ﻿import random
+from math import sin,cos
 rd=random.randint
 
 def void(x):
@@ -19,13 +20,16 @@ class vec():
         self.y=y
     def mo(self):
         return (self.x**2+self.y**2)**0.5
-    def normalize(self):
+    def normalize(self):    #规范化
         l=self.mo()
         if l==0 : return 
         self.x/=l
         self.y/=l
-    def ran_dif(self,n):
+    def ran_dif(self,n):    #随机偏移
         return vec(self.x+rd(-n,n),self.y+rd(-n,n))
+    def adjust_angle(self,a):   #角度调整
+        s,c=(sin(a),cos(a))
+        return vec( c*self.x-s*self.y , s*self.x+c*self.y )
     def __mul__(self,n):
         if type(n)==int or type(n)==float:
             return vec(self.x*n,self.y*n)

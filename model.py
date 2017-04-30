@@ -23,12 +23,13 @@ class model():
         self.max_time=t
         self.life_time=t
         self.iki=True
-        self.z_index=0
+        self.z_index=0      #层叠顺序
     def time_pass(self,time):
         self.life_time-=time
         if self.life_time<=0:
             self.die()
     def draw(self,screen):
+        self.face=self.owner.face
         self.x=self.owner.v.x
         self.y=self.owner.v.y
         try:
@@ -57,6 +58,30 @@ class 方块(model):
         if t<0.3:
             r=int(t/0.4*r)
         pygame.draw.rect(screen, (255,255,255), (self.x-r,self.y-r,r*2,r*2))
+
+class 直线(model):
+    def __init__(self,t=99999999,l=20,color=(255,255,255),width=3):
+        super().__init__(t)
+        self.l=l
+        self.color=color
+        self.width=width
+    def draww(self,screen):
+        v=self.face*self.l
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v.x,self.y-v.y),self.width)
+        
+class 箭头(model):
+    def __init__(self,t=99999999,l=20,color=(255,255,255),width=3):
+        super().__init__(t)
+        self.l=l
+        self.color=color
+        self.width=width
+    def draww(self,screen):
+        v=self.face*self.l
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v.x,self.y-v.y),self.width)
+        v1=v.adjust_angle(3.14/4)*0.5
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v1.x,self.y-v1.y),self.width)
+        v2=v.adjust_angle(-3.14/4)*0.5
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v2.x,self.y-v2.y),self.width)
         
 class 圆形(model):
     def __init__(self,t=99999999,r=15):
@@ -207,7 +232,7 @@ class 吟唱(model):
             r = th/200 -t
             r2 = r+13
             h=hash(str(int(th)))
-            color = (h/156/156%156+100,h/156%156+100,h%156+100)
+            color = (h/136/136%136+120,h/136%136+120,h%136+120)
             x,y = (r*cos(th),r*sin(th))
             x2,y2 = (r2*cos(th),r2*sin(th))
             # print(x,y,x2,y2)

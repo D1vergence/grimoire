@@ -86,19 +86,22 @@ class 绿色原谅光线(magic):
             if i is not self.owner and d<self.r and vec(x2-x1,y2-y1)*(i.v-self.owner.v)>0:
                 self.owner.dam(i,50)
 
-#这名字超级随便的我自己都笑了23333                
-class 射炸弹(magic):
+#我自己都笑了23333                
+class 若风一指(magic):
     def __init__(self):
         super().__init__()
         self.song_time=0.5
         self.r=60
         self.cool_down=1
     def act(self,x,y):
-        t=self.owner.summon(unit.arrow_to_d(x-self.owner.v.x,y-self.owner.v.y))
+        v=vec(x-self.owner.v.x, y-self.owner.v.y).adjust_angle((random.random()-0.5)/2)
+        t=self.owner.summon(unit.arrow_to_d(v.x,v.y))
+        t.model.pop()
+        t.model.append(model.箭头(l=50,width=6,color=(255,111,111)))
         t.die_model=model.爆炸(t=0.3,r=200)
         t.speed=1000
-        t.add_ef(effect.bomb(r=30,power=100,aoe=True,aoe_r=200))
-        
+        t.add_ef(effect.bomb(r=45,power=100,aoe=True,aoe_r=200))
+
 
 class 沉默风暴(magic):
     def __init__(self):
@@ -107,16 +110,17 @@ class 沉默风暴(magic):
     def act(self,x,y):
         t=self.owner.summon(unit.token(),4,x,y)
         t.add_ef(effect.aura(r=140, generator=lambda: effect.silence(life_time=0)))
-        
+
 class 闪现(magic):
     def __init__(self):
         super().__init__()
+        self.name='折跃'
         self.song_time=0.3
         self.cool_down=12
     def act(self,x,y):
         self.owner.set_v(x,y)
         self.owner.summon(unit.decorator(model.闪光(0.5)))
-        
+
 class 净化光线(magic):
     def __init__(self):
         super().__init__()
@@ -130,22 +134,7 @@ class 净化光线(magic):
         t.add_ef(effect.closing())
         self.owner.add_ef(effect.continue_cast(t=30,die_func=lambda: t.die()))
 
-class 气球炸弹(magic):
-    def __init__(self):
-        super().__init__()
-        self.song_time=0.5
-        self.cost=150
-        self.cool_down=4
-    def act(self,x,y):
-        def unit_gen():
-            t=unit.token()
-            t.speed=80
-            t.model.append(model.火球())
-            t.die_model=model.爆炸(t=0.2,r=50)
-            t.add_ef(effect.bomb(r=30,power=40))
-            t.add_ef(effect.closing())
-            return t
-        self.owner.add_ef(effect.unit_gen(t=3,cd=0.4,unit=unit_gen))
+
 
 class 战争践踏(magic):
     def __init__(self):
@@ -186,12 +175,46 @@ class 闪电(magic):
 class 射箭(magic):
     def __init__(self):
         super().__init__()
-        self.cost=50
-        self.song_time=0.1
-        self.cool_down=1.3
+        self.cost=35
+        self.song_time=0
+        self.cool_down=1
     def act(self,x,y):
         t=self.owner.summon(unit.arrow_to_d(x-self.owner.v.x,y-self.owner.v.y))
+        t.speed=500
         t.add_ef(effect.bomb(r=30,power=30))
+        
+class 气球炸弹(magic):
+    def __init__(self):
+        super().__init__()
+        self.song_time=0.2
+        self.cost=150
+        self.cool_down=7
+    def act(self,x,y):
+        def unit_gen():
+            t=unit.token()
+            t.speed=80
+            t.model.append(model.火球())
+            t.die_model=model.爆炸(t=0.2,r=50)
+            t.add_ef(effect.bomb(r=30,power=40))
+            t.add_ef(effect.closing())
+            return t
+        self.owner.add_ef(effect.unit_gen(t=6,cd=0.4,unit=unit_gen))
+        
+class 大量射箭(magic):
+    def __init__(self):
+        super().__init__()
+        self.song_time=0.5
+        self.cost=150
+        self.cool_down=8
+    def act(self,x,y):
+        def unit_gen():
+            v=(vec(x,y)-self.owner.v).adjust_angle((random.random()-0.5)/3)
+            t=unit.arrow_to_d(v.x,v.y,model.箭头(l=15,color=(255,255,200),width=2))
+            t.add_ef(effect.bomb(r=25,power=20))
+            return t
+        e=effect.unit_gen(cd=0.05,unit=unit_gen)
+        self.owner.add_ef(e)
+        self.owner.add_ef(effect.continue_cast(t=7,die_func=lambda: e.die()))
 
 if __name__=='__main__':
     pass
