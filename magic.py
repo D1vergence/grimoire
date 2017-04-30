@@ -208,7 +208,7 @@ class 大量射箭(magic):
         self.cool_down=8
     def act(self,x,y):
         def unit_gen():
-            v=(vec(x,y)-self.owner.v).adjust_angle((random.random()-0.5)/3)
+            v=(vec(x,y)-self.owner.v).adjust_angle(random.gauss(0,0.14))
             t=unit.arrow_to_d(v.x,v.y,model.箭头(l=15,color=(255,255,200),width=2))
             t.add_ef(effect.bomb(r=25,power=20))
             return t
