@@ -131,7 +131,7 @@ class 激光(model):
         self.z_index=-10
     def draww(self,screen):
         p1=vec(self.x,self.y)
-        p2=p1-(p1-self.pos)*100
+        p2=p1-(p1-self.pos)*9999
         r= abs(int(sin(self.life_time/self.max_time*3.14)*self.r))
         pygame.draw.line(screen,self.color,(p1.x,p1.y),(p2.x,p2.y), r)
         pygame.draw.circle(screen,self.color,(int(self.x),int(self.y)),int(r/2))
@@ -151,7 +151,7 @@ class 闪电(model):
             pygame.draw.line(screen,color,(pre.x,pre.y),(p.x,p.y), 3)
             pre=p
         pygame.draw.line(screen,color,(pre.x,pre.y),(p2.x,p2.y), 3)
-        
+
 
 class 闪光(model):
     def __init__(self,t=99999999,r=40):
@@ -221,7 +221,7 @@ class 持续施法(model):
         pygame.draw.circle(screen,color,[int(self.x),int(self.y)],21,3)
         
 class 吟唱(model):
-    def __init__(self,t):
+    def __init__(self,t=99999999):
         super().__init__(t)
         self.z_index=22
     def draww(self,screen):
@@ -302,12 +302,17 @@ class 火焰(model):
             po2=[int(self.x+self.r*rdp()*cos(t)),int(self.y+self.r*rdp()*sin(t))]
             pygame.draw.line(screen,[rd(100,255),55,55],po1,po2,2)
         
-class 白圆(model):
-    def __init__(self,r,t=99999999):
+class 扩散白圈(model):
+    def __init__(self,r,t=99999999,reverse=False):
         super().__init__(t)
         self.r=r
+        self.reverse=reverse
     def draww(self,screen):
-        pygame.draw.circle(screen,(255,255,255),[int(self.x),int(self.y)],good(self.r*(1-self.life_time/self.max_time)),3)
+        if self.reverse:
+            n=self.life_time/self.max_time
+        else:
+            n=1-self.life_time/self.max_time
+        pygame.draw.circle(screen,(255,255,255),[int(self.x),int(self.y)],good(self.r*n),3)
         
 class 圆(model):
     def __init__(self,r,t=99999999,color=(255,255,255)):
@@ -336,6 +341,7 @@ class 火球(model):
         r=int(14+2*sin(30*t))
         pygame.draw.circle(screen,[255,255,0],[int(self.x),int(self.y)],r)
         pygame.draw.circle(screen,[255,0,0],[int(self.x),int(self.y)],r+1)
+        
         
 def good(f):
     f=max(f,10)

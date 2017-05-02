@@ -40,5 +40,6 @@ if __name__=='__main__':
         for i in unit.unit_pool:
             i.time_pass(time_passed)
         de(unit.unit_pool, lambda i: not i.iki)
+        # print(len(unit.unit_pool))
 
         server.pickle_model = pickle.dumps(model.model_pool_bk)

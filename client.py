@@ -15,7 +15,7 @@ os.system('title 客户端')
 scr_size=(1366,768)
 bg_img='bg.png'
 server_addr=('127.0.0.1',8003)
-hero=1
+hero=2
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -40,7 +40,7 @@ def recvall(sock, count):
         buf += newbuf
         count -= len(newbuf)
     return buf
-    
+
 def my_rec(sock):    
     length = recvall(sock,16)
     data = recvall(sock, int(length))

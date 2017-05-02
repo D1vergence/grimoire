@@ -45,7 +45,6 @@ class unit():
         self.mana=min(self.mana+t*self.mana_rc,self.max_mana)
         self.hp  =min(self.hp  +t*self.hp_rc  ,self.maxhp  )
         
-        
         #自身行为经过
         if self.now_cmd[0]=='hold':
             pass
@@ -97,25 +96,15 @@ class unit():
 
 
 #位移
-    def set_v(self,x,y):
+    def set_v(self,x=0,y=0):
+        if type(x)==vec:
+            y=x.y
+            x=x.x
         ev.ev(self,'_set_v',x,y)
     def _set_v(self,x,y):
         self.v.x=x
         self.v.y=y
         self.cmd('hold')
-
-#召唤另一个单位
-    def summon(self,u,t=None,x=None,y=None):
-        if u==None : return 
-        if not x and not y:
-            x=self.v.x
-            y=self.v.y
-        u.player=self.player
-        if t:
-            u.add_ef(effect.kill_pass_time(t))
-        u.set_v(x,y)
-        unit_pool.append(u)
-        return u
 
 #支付魔法
     def cost_mana(self,n):
@@ -123,7 +112,6 @@ class unit():
             self.mana-=n
             return True
         return False
-            
         
 #获得速度 (事件)
     def get_speed(self):
@@ -156,29 +144,27 @@ class unit():
         for i in self.effect:
             i.die()
         if self.die_model:
-            self.summon(decorator(self.die_model))
+            t=decorator(self.die_model)
+            t.set_v(self.v)
+            unit_pool.append(t)
         
-#受到来自源的伤害(事件)
-    def hurt(self,source=None,x=100):
-        if not source:
-            source=self
-        ev.ev(self,'_hurt',source,x)
-    def _hurt(self,source,x):
+#受到伤害(事件)
+    def hurt(self,damage):
+        ev.ev(self,'_hurt',damage)
+    def _hurt(self,*d):
         pass
         
-#受到来自源的回复(事件)
-    def heal(self,source=None,x=100):
-        if not source:
-            source=self
-        ev.ev(self,'_heal',source,x)
-    def _heal(self,source,x):
+#受到回复(事件)
+    def heal(self,x=100):
+        ev.ev(self,'_heal',x)
+    def _heal(self,*d):
         pass
 
 #对目标造成伤害(事件)
-    def dam(self,tar,x):
-        ev.ev(self,'_dam',tar,x)
-    def _dam(self,tar,x):
-        tar.hurt(self,x)
+    def dam(self,tar,damage):
+        ev.ev(self,'_dam',tar,damage)
+    def _dam(self,tar,damage):
+        tar.hurt(damage)
 
 #——————————————————————————————————————————
 #——————————————————————————————————————————
@@ -194,20 +180,16 @@ class real_unit(unit):
         a=self.player
         if a!=0 :
             color=(a//200//200%200+55,a//200%200+55,a%200+55)
-            self.model.reverse()    #作大死
             self.model.append(model.血条(color=color))    
             self.model.append(model.蓝条())    
-            self.model.reverse()    
         else:
-            self.model.reverse()    #作大死
             self.model.append(model.血条())
-            self.model.reverse()
 
-    def _hurt(self,source,x):
-        self.hp-=x
+    def _hurt(self,damage):
+        self.hp-=damage.value
         if self.hp<=0:
             self.die()
-    def _heal(self,source,x):
+    def _heal(self,x):
         self.hp+=x
         if self.hp>self.maxhp:
             self.hp=self.maxhp
@@ -219,9 +201,17 @@ class test_unit(real_unit):
         self.add_ef(effect.go233())
         self.add_ef(effect.limit_screen())
         self.speed=200
-        self.maxhp=100
-        self.hp=100
+        self.maxhp=60
+        self.hp=60
         self.die_model=model.圆形消失(0.6)
+        
+        # self.add_ef(effect.funnel())
+        # self.add_ef(effect.bomb(r=4,power=70,aoe=True,aoe_r=100))
+        # self.add_ef(effect.closing())
+        # self.die_model=model.爆炸(t=0.3,r=100)
+        # self.player=random.random()
+        
+        
 
 class abst_unit(unit):
     def __init__(self):
@@ -241,7 +231,7 @@ class decorator(abst_unit):
         if len(self.model)==0: 
             self.die()
         
-class arrow(abst_unit):
+class arrow(token):
     def __init__(self):
         super().__init__()
         self.speed=300
@@ -260,9 +250,11 @@ class arrow_to_u(arrow):
             self.die()
                     
 class arrow_to_d(arrow):
-    def __init__(self,x,y,set_model=model.箭头()):
+    def __init__(self,x,y,set_model=None):
         super().__init__()
         self.speed=400
+        if not set_model:
+            set_model = model.箭头()
         self.model.append(set_model)
         self.add_ef(effect.kill_out_screen())
         self.p_v=vec(x,y)
@@ -304,9 +296,9 @@ class bird(hero):
         self.add_ef(effect.limit_screen())
         # self.add_ef(effect.silence())
         
-        self.magic.append(magic.射箭())
-        self.magic.append(magic.大量射箭())
-        self.magic.append(magic.气球炸弹())
+        self.magic.append(magic.光之矢())
+        self.magic.append(magic.虚伪的磐舟())
+        self.magic.append(magic.飞行的死())
         self.magic.append(magic.若风一指())
         
         self.model.append(model.头像(name='bird'))
@@ -314,7 +306,7 @@ class bird(hero):
         # self.add_ef()
         # self.add_ef(effect.slience())
         
-class rimo(hero):
+class suin(hero):
     def __init__(self):
         super().__init__()
         
@@ -323,9 +315,9 @@ class rimo(hero):
         # self.add_ef(effect.vampire())
         # self.add_ef(effect.silence())
         
-        self.magic.append(magic.召唤舰队())
-        self.magic.append(magic.闪电())
+        self.magic.append(magic.原谅光线())
+        self.magic.append(magic.星河漩涡())
         self.magic.append(magic.闪现())
-        self.magic.append(magic.绿色原谅光线())
+        self.magic.append(magic.舰队已经抵达())
         
-        self.model.append(model.头像(name='rimo'))
+        self.model.append(model.头像(name='suin'))

@@ -5,10 +5,12 @@ from tool import *
 import model
 import unit
 import ev
+import damage
+import fantasy
 from screen import screen
 
 #基础效果
-class effect():
+class effect(fantasy.fantasy):
     def __init__(self,life_time=99999999):
         self.max_time=life_time
         self.life_time=life_time
@@ -58,7 +60,7 @@ class fire(effect):
             if not self.ali_dam and i.player==self.owner.player:
                 continue
             if (i.v-self.owner.v).mo()<self.hurt_distance:
-                self.owner.dam(i,time*self.hurt_per_s)
+                self.dam(i,time*self.hurt_per_s)
                 
 #对碰到的单位仅造成一次伤害
 class one_dam(effect):
@@ -77,7 +79,7 @@ class one_dam(effect):
             if i in self.hurted_pool:
                 continue
             if (i.v-self.owner.v).mo()<self.r:
-                self.owner.dam(i,self.power)
+                self.dam(i,self.power)
                 self.hurted_pool.append(i)
                 
 
@@ -294,7 +296,7 @@ class unit_gen(effect):
         self.cd_left-=t
         if self.cd_left<0:
             self.cd_left+=self.cd
-            self.owner.summon(self.unit())
+            self.summon(self.unit())
 
 #浮游炮
 class funnel(unit_gen):
@@ -307,7 +309,7 @@ class funnel(unit_gen):
                         , unit.unit_pool))
             if tar_pool:
                 def d(i):
-                    return lambda:self.owner.dam(i,10)
+                    return lambda:self.dam(i,10)
                 i=random.choice(tar_pool)
                 t=unit.arrow_to_u(i,act=d(i))
                 t.die_model=model.爆炸(20,0.2)
@@ -330,14 +332,14 @@ class bomb(effect):
                 continue
             if (i.v-self.owner.v).mo()<self.r:
                 if not self.aoe:
-                    self.owner.dam(i,self.power)
+                    self.dam(i,self.power)
                 self.owner.die()
                 return
     def die(self):
         if self.aoe:
             for i in unit.unit_pool:
                 if (self.owner.v-i.v).mo()<self.aoe_r:
-                    self.owner.dam(i,self.power)
+                    self.dam(i,self.power)
         effect.die(self)
 
 #自动靠近敌人
@@ -352,6 +354,15 @@ class closing(effect):
                         , unit.unit_pool))
         if tar_pool:
             self.owner.cmd(min(tar_pool,key= lambda i: (i.v-self.owner.v).mo()).v )
-            
-        
-        
+
+#吞噬
+class eat(effect):
+    def __init__(self,t=9999999,eat_unit=None):
+        super().__init__(t)
+        self.ignore_imm=True
+        self.eat_unit=eat_unit
+        # print(eat_unit.__class__.__name__)
+        unit.unit_pool.remove(self.eat_unit)
+    def die(self):
+        self.eat_unit.set_v(self.owner.v)
+        unit.unit_pool.append(self.eat_unit)
