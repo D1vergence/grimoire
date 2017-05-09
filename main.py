@@ -32,7 +32,7 @@ if __name__=='__main__':
         time_passed = clock.tick() / 1000
         time_log(time_passed)
         if random.random()<time_passed/1:
-            if len(unit.unit_pool)<30:
+            if len(unit.unit_pool)<26:
                 t=unit.test_unit()
                 t.set_v(rd(0,1366),rd(0,768))
                 unit.unit_pool.append(t)
@@ -40,6 +40,5 @@ if __name__=='__main__':
         for i in unit.unit_pool:
             i.time_pass(time_passed)
         de(unit.unit_pool, lambda i: not i.iki)
-        # print(len(unit.unit_pool))
 
         server.pickle_model = pickle.dumps(model.model_pool_bk)

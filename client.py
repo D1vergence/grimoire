@@ -10,21 +10,18 @@ import os
 from tool import *
 import time
 import threading
+import config
 
 os.system('title 客户端')
-scr_size=(1366,768)
-bg_img='bg.png'
-server_addr=('127.0.0.1',8003)
-hero=2
 
 pygame.init()
 clock = pygame.time.Clock()
 
-screen = pygame.display.set_mode(scr_size, 0, 32)
-# screen = pygame.display.set_mode((1366, 768),(pygame.FULLSCREEN),32)
+screen = pygame.display.set_mode(config.scr_size, 0, 32)
+# screen = pygame.display.set_mode(config.scr_size,(pygame.FULLSCREEN),32)
 import model
 
-background = pygame.image.load(bg_img).convert()
+background = pygame.image.load(config.bg_img).convert()
 
 def go(x):
     t = eval('model.%s(t=%s)' % (x.split('(')[0], x.split(',')[2]  ))
@@ -61,8 +58,8 @@ font = pygame.font.SysFont('SimHei', 24)
 
 
 sock2 = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-sock2.connect(server_addr)
-sock2.send(b'ct0'+str(hero).encode())
+sock2.connect(config.server_addr)
+sock2.send(b'ct0'+str(config.hero).encode())
 
 def suc(p):
     return str(p[0]).zfill(5)+str(p[1]).zfill(5)
@@ -85,7 +82,7 @@ def one_exchange(sock):
 def exchange():
     for i in range(5):
         sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        sock.connect(server_addr)
+        sock.connect(config.server_addr)
         sock.send(b'mdzz')
         t = threading.Thread(target=lambda:one_exchange(sock),)
         t.setDaemon(True)
@@ -134,7 +131,7 @@ while True:
     write_word('/',            640,740)
     write_word('%d'%info[3][1],652,740,color=(170,170,255))
     
-    x=1200
+    x=1080
     y=440
     for i in info[1]:
         y+=40

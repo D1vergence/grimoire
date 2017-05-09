@@ -27,6 +27,10 @@ def server(address):
             you.set_hero(1)
         if f_s==b'ct02':
             you.set_hero(2)
+        if f_s==b'ct03':
+            you.set_hero(3)
+        if f_s==b'ct04':
+            you.set_hero(4)
 
         while True:
             s=sock.recv(13)

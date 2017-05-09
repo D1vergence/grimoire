@@ -54,10 +54,11 @@ class unit():
             v.normalize()
             self.face=v
             go=v*t*self.get_speed()
-            if go.mo()>(v_tar-self.v).mo():
-                self.v=v_tar
-            else:
+            if go.mo()<(v_tar-self.v).mo():
                 self.v+=go
+            else:
+                self.v=v_tar
+                self.cmd('hold')
 
         #效果和模型经过
         de(self.effect, lambda i: not i.iki)
@@ -210,14 +211,12 @@ class test_unit(real_unit):
         # self.add_ef(effect.closing())
         # self.die_model=model.爆炸(t=0.3,r=100)
         # self.player=random.random()
-        
-        
 
 class abst_unit(unit):
     def __init__(self):
         super().__init__()
         self.add_ef(effect.magic_imm())
-
+        
 class token(abst_unit):
     def __init__(self):
         super().__init__()
@@ -235,7 +234,8 @@ class arrow(token):
     def __init__(self):
         super().__init__()
         self.speed=300
-        
+
+#指向单位的箭矢
 class arrow_to_u(arrow):
     def __init__(self,tar,act=lambda:0):
         super().__init__()
@@ -248,21 +248,28 @@ class arrow_to_u(arrow):
         if (self.tar.v-self.v).mo()<10:
             self.act()
             self.die()
-                    
+            
+#指定向量的箭矢
 class arrow_to_d(arrow):
-    def __init__(self,x,y,set_model=None):
+    def __init__(self,v,set_model=None,exact=False):
         super().__init__()
         self.speed=400
         if not set_model:
             set_model = model.箭头()
         self.model.append(set_model)
         self.add_ef(effect.kill_out_screen())
-        self.p_v=vec(x,y)
+        self.p_v=v
         self.die_model=model.爆炸(80,0.2)
+        self.exact=exact
+    
+    def birth(self):
+        self.tar_v=self.v+self.p_v
 
     def time_pass(self,time):
         arrow.time_pass(self,time)
-        self.cmd(self.v+self.p_v)
+        self.cmd(self.v+self.p_v*999)
+        if self.exact and (self.tar_v-self.v).mo()<10:
+            self.die()
 
 
 class ship(real_unit):
@@ -288,23 +295,22 @@ class hero(real_unit):
         self.mana_rc=25
         self.hp_rc=2
         self.add_ef(effect.dam_imm(t=2))
+
+        self.model.append(model.头像(name=self.__class__.__name__))
         
         
 class bird(hero):
     def __init__(self):
         super().__init__()
+        self.speed=235
         self.add_ef(effect.limit_screen())
         # self.add_ef(effect.silence())
         
         self.magic.append(magic.光之矢())
         self.magic.append(magic.虚伪的磐舟())
-        self.magic.append(magic.飞行的死())
+        self.magic.append(magic.冰之矢())
         self.magic.append(magic.若风一指())
         
-        self.model.append(model.头像(name='bird'))
-        
-        # self.add_ef()
-        # self.add_ef(effect.slience())
         
 class suin(hero):
     def __init__(self):
@@ -318,6 +324,23 @@ class suin(hero):
         self.magic.append(magic.原谅光线())
         self.magic.append(magic.星河漩涡())
         self.magic.append(magic.闪现())
-        self.magic.append(magic.舰队已经抵达())
+        self.magic.append(magic.舰队())
         
-        self.model.append(model.头像(name='suin'))
+        
+class rimo(hero):
+    def __init__(self):
+        super().__init__()
+        self.magic.append(magic.烈焰风暴())
+        self.magic.append(magic.沉默风暴())
+        self.magic.append(magic.闪电())
+        self.magic.append(magic.ghost_parade())
+        
+class pandaye(hero):
+    def __init__(self):
+        super().__init__()
+        self.magic.append(magic.轨道坠落())
+        self.magic.append(magic.断电导弹())
+        self.magic.append(magic.气球炸弹())
+        self.magic.append(magic.panux连线())
+        
+        

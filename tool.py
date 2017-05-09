@@ -25,8 +25,11 @@ class vec():
         if l==0 : return 
         self.x/=l
         self.y/=l
-    def ran_dif(self,n):    #随机偏移
-        return vec(self.x+rd(-n,n),self.y+rd(-n,n))
+    def ran_dif(self,n,gauss=False):    #随机偏移
+        if gauss:
+            return vec(self.x+random.gauss(0,n),self.y+random.gauss(0,n))
+        else:
+            return vec(self.x+rd(-n,n),self.y+rd(-n,n))
     def adjust_angle(self,a):   #角度调整
         s,c=(sin(a),cos(a))
         return vec( c*self.x-s*self.y , s*self.x+c*self.y )
@@ -39,6 +42,8 @@ class vec():
         return vec(self.x+v2[0],self.y+v2[1])
     def __sub__(self,v2):
         return vec(self.x-v2[0],self.y-v2[1])
+    def __eq__(self,v2):
+        return self.x==v2.x and self.y==v2.y
     def __getitem__(self, n):
         if n==0:
             return self.x

@@ -50,7 +50,7 @@ class fire(effect):
         self.hurt_distance = r
         self.ali_dam=ali_dam
         self.model.append(model.火焰(r))
-        self.model.append(model.白圆(r*1.2,t=0.2))
+        self.model.append(model.扩散白圈(r*1.2,t=0.2))
         
     def time_pass(self,time):
         effect.time_pass(self,time)
@@ -85,16 +85,16 @@ class one_dam(effect):
 
 #为单位施加效果的光环 (统一的)        
 class aura(effect):
-    def __init__(self,life_time=9999999,r=30,ali_dam=True,generator=None):
+    def __init__(self,life_time=9999999,r=30,ali_dam=True,generator=None,color=(255,255,255)):
         super().__init__(life_time)
         self.ignore_imm=True    #注意，光环效果本身当然无视魔免，但是光环施加的效果不一定
         self.r = r
         self.ali_dam=ali_dam
-        self.model.append(model.减速光环(r=r))
+        self.model.append(model.光环(r=r,color=color))
         if generator:
             self.generator = generator
         else:
-            self.generator = lambda : slow(life_time=0,percent=0.7)
+            self.generator = lambda x: slow(life_time=0,percent=0.7)
             
     def time_pass(self,time):
         effect.time_pass(self,time)
@@ -102,7 +102,10 @@ class aura(effect):
             if not self.ali_dam and i.player==self.owner.player:
                 continue
             if (i.v-self.owner.v).mo()<self.r:
-                e=self.generator()
+                try:
+                    e=self.generator(i)
+                except:
+                    e=self.generator()
                 e.source=self
                 ev.ev(i,'_add_ef',e)
 
@@ -186,7 +189,18 @@ class forced_move(effect):
         if event.kind=='_cmd':
             return None
         return event
-
+        
+#延时事件
+class timer(effect):
+    def __init__(self,t,func):
+        super().__init__(t)
+        self.ignore_imm=True
+        self.f=func
+    def die(self):
+        self.f()
+        effect.die(self)
+    
+        
 #吟唱
 class song(effect):
     def __init__(self,life_time,function):
@@ -255,7 +269,21 @@ class go233(effect):
 
     def time_pass(self,time):
         if random.random()<time*self.expect:
-            self.owner.cmd(self.owner.v.x+rd(-self.r,self.r),self.owner.v.y+rd(-self.r,self.r))
+            self.owner.cmd(self.owner.v.ran_dif(self.r))
+
+#绕中心走来走去
+class go666(effect):
+    def __init__(self,center_unit=None,r=100):
+        super().__init__()
+        self.ignore_imm=True
+        self.r=r
+        self.center=center_unit
+
+    def time_pass(self,time):
+        # (self.owner.v-self.center.v).mo()>self.r or 
+        if  self.owner.now_cmd[0]=='hold':
+            self.owner.cmd(self.center.v.ran_dif(self.r/2,gauss=True))
+            
 
 #效果免疫(其实实际上只免疫effect)
 class magic_imm(effect):
@@ -317,14 +345,16 @@ class funnel(unit_gen):
         super().__init__(life_time,cd=0.5,unit=gen)
 
 #對臨近單位自爆
+#一般就带有power是造成伤害，如果填了func就会有特殊效果
 class bomb(effect):
-    def __init__(self,life_time=9999999,r=200,power=30,aoe=False,aoe_r=400):
+    def __init__(self,life_time=9999999,r=200,power=30,aoe=False,aoe_r=400,func=lambda u:0):
         super().__init__(life_time)
         self.r = r
         self.power = power
         self.ignore_imm=True
         self.aoe=aoe
         self.aoe_r=aoe_r
+        self.func=func
     def time_pass(self,t):
         effect.time_pass(self,t)
         for i in unit.unit_pool:
@@ -333,6 +363,7 @@ class bomb(effect):
             if (i.v-self.owner.v).mo()<self.r:
                 if not self.aoe:
                     self.dam(i,self.power)
+                    self.func(i)
                 self.owner.die()
                 return
     def die(self):
@@ -340,6 +371,7 @@ class bomb(effect):
             for i in unit.unit_pool:
                 if (self.owner.v-i.v).mo()<self.aoe_r:
                     self.dam(i,self.power)
+                    self.func(i)
         effect.die(self)
 
 #自动靠近敌人

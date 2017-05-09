@@ -32,6 +32,10 @@ class player():
             self.me=unit.bird()
         if n==2:
             self.me=unit.suin()
+        if n==3:
+            self.me=unit.rimo()
+        if n==4:
+            self.me=unit.pandaye()
         self.me.player=hash(self)
         unit.unit_pool.append(self.me)
         self.ctrler=ctrler(self.me)

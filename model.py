@@ -83,6 +83,15 @@ class 箭头(model):
         v2=v.adjust_angle(-3.14/4)*0.5
         pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v2.x,self.y-v2.y),self.width)
         
+class 圆(model):
+    def __init__(self,r,t=99999999,color=(255,255,255)):
+        super().__init__(t)
+        self.r=r
+        self.color=color
+        self.z_index=22
+    def draww(self,screen):
+        pygame.draw.circle(screen,self.color,(int(self.x),int(self.y)),self.r,3)
+        
 class 圆形(model):
     def __init__(self,t=99999999,r=15):
         super().__init__(t)
@@ -126,11 +135,13 @@ class 激光(model):
     def __init__(self,t=99999999,color=(255,255,255),pos=(0,0),r=20):
         super().__init__(t)
         self.color=color
-        self.pos=pos
+        self.pos=vec(pos[0],pos[1])
         self.r=r
         self.z_index=-10
     def draww(self,screen):
         p1=vec(self.x,self.y)
+        if self.pos==p1:
+            self.pos.x+=1
         p2=p1-(p1-self.pos)*9999
         r= abs(int(sin(self.life_time/self.max_time*3.14)*self.r))
         pygame.draw.line(screen,self.color,(p1.x,p1.y),(p2.x,p2.y), r)
@@ -241,21 +252,23 @@ class 吟唱(model):
 class 沉默(model):
     def __init__(self,t):
         super().__init__(t)
+        self.z_index=22
     def draww(self,screen):
         self.font = pygame.font.SysFont('SimHei', 20)
         self.font_surface = self.font.render('黙', True, (0,0,0))
-        screen.blit(self.font_surface, (self.x+1, self.y+1))
+        screen.blit(self.font_surface, (self.x-19, self.y+1))
         self.font_surface = self.font.render('黙', True, (255,255,255))
-        screen.blit(self.font_surface, (self.x, self.y))
+        screen.blit(self.font_surface, (self.x-20, self.y))
         
 class 减速(model):
     def __init__(self,t):
         super().__init__(t)
+        self.z_index=22
     def draww(self,screen):
         self.font = pygame.font.SysFont('SimHei', 20)
         self.font_surface = self.font.render('减速', True, (0,0,0))
         screen.blit(self.font_surface, (self.x+1, self.y+1))
-        self.font_surface = self.font.render('减速', True, (255,255,255))
+        self.font_surface = self.font.render('减速', True, (144,144,255))
         screen.blit(self.font_surface, (self.x, self.y))
         
 class 血条(model):
@@ -276,17 +289,18 @@ class 蓝条(model):
         pygame.draw.rect(screen,(0,0,0), (self.x-19,self.y-23,36*(self.mana/self.max_mana),6))
         pygame.draw.rect(screen, self.color, (self.x-17,self.y-22,34*(self.mana/self.max_mana),4))
 
-class 减速光环(model):
-    def __init__(self,r,t=99999999):
+class 光环(model):
+    def __init__(self,r,t=99999999,color=(255,255,255)):
         super().__init__(t)
         self.r=r
         self.z_index=-10
+        self.color=color
     def draww(self,screen):
-        pygame.draw.circle(screen,(255,255,255),[int(self.x),int(self.y)],self.r,3)
+        pygame.draw.circle(screen,self.color,[int(self.x),int(self.y)],self.r,3)
         t =(self.max_time-self.life_time)*3
         for i in range(3):
             t+=3.14*2/3
-            pygame.draw.circle(screen,(255,255,255),[int(self.x),int(self.y)],int(self.r*(1+sin(t))/2+3),3)
+            pygame.draw.circle(screen,self.color,[int(self.x),int(self.y)],int(self.r*(1+sin(t))/2+3),3)
 
 class 火焰(model):
     def __init__(self,r,t=99999999):
@@ -314,14 +328,6 @@ class 扩散白圈(model):
             n=1-self.life_time/self.max_time
         pygame.draw.circle(screen,(255,255,255),[int(self.x),int(self.y)],good(self.r*n),3)
         
-class 圆(model):
-    def __init__(self,r,t=99999999,color=(255,255,255)):
-        super().__init__(t)
-        self.r=r
-        self.color=color
-        self.z_index=22
-    def draww(self,screen):
-        pygame.draw.circle(screen,self.color,(int(self.x),int(self.y)),self.r,3)
         
 class 爆炸(model):
     def __init__(self,r,t=99999999,color=(255,100,100)):
