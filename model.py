@@ -69,6 +69,20 @@ class 直线(model):
         v=self.face*self.l
         pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v.x,self.y-v.y),self.width)
         
+class 神风(model):
+    def __init__(self,t=99999999,l=20,color=(255,255,255)):
+        super().__init__(t)
+        self.l=l
+        self.color=color
+    def draww(self,screen):
+        v=self.face*self.l
+        mid=vec(self.x,self.y)-v*0.5
+        v1=v.adjust_angle(1)*0.7
+        v2=v.adjust_angle(-1)*0.7
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v.x,self.y-v.y),3)
+        pygame.draw.line(screen, self.color, (mid.x,mid.y),(mid.x-v1.x,mid.y-v1.y),3)
+        pygame.draw.line(screen, self.color, (mid.x,mid.y),(mid.x-v2.x,mid.y-v2.y),3)
+        
 class 箭头(model):
     def __init__(self,t=99999999,l=20,color=(255,255,255),width=3):
         super().__init__(t)
@@ -303,13 +317,14 @@ class 光环(model):
             pygame.draw.circle(screen,self.color,[int(self.x),int(self.y)],int(self.r*(1+sin(t))/2+3),3)
 
 class 火焰(model):
-    def __init__(self,r,t=99999999):
+    def __init__(self,r,t=99999999,dens=0):
         super().__init__(t)
         self.r=r
         self.z_index=-10
+        self.dens=dens
     def draww(self,screen):
         pygame.draw.circle(screen,[rd(100,255),55,55],[int(self.x),int(self.y)],self.r,3)
-        for i in range(20):
+        for i in range(self.dens//4):
             t=rdth()
             po1=[int(self.x+self.r*rdp()*cos(t)),int(self.y+self.r*rdp()*sin(t))]
             t=rdth()

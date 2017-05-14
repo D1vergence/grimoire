@@ -49,7 +49,7 @@ class fire(effect):
         self.hurt_per_s = power
         self.hurt_distance = r
         self.ali_dam=ali_dam
-        self.model.append(model.火焰(r))
+        self.model.append(model.火焰(r,dens=power))
         self.model.append(model.扩散白圈(r*1.2,t=0.2))
         
     def time_pass(self,time):
@@ -175,6 +175,8 @@ class forced_move(effect):
         super().__init__(t)
         self.v_tar=vec(x,y)
         self.speed=1300
+    def birth(self):
+        self.owner.cmd('hold')
     def time_pass(self,t):
         effect.time_pass(self,t)
         v=self.v_tar-self.owner.v
@@ -328,7 +330,7 @@ class unit_gen(effect):
 
 #浮游炮
 class funnel(unit_gen):
-    def __init__(self,life_time=9999999,r=200):
+    def __init__(self,life_time=9999999,r=200,arrow_model=None,speed=300,cd=0.5,power=10):
         self.r = r
         def gen():
             tar_pool=list(filter(lambda i: i.player!=self.owner.player 
@@ -337,12 +339,13 @@ class funnel(unit_gen):
                         , unit.unit_pool))
             if tar_pool:
                 def d(i):
-                    return lambda:self.dam(i,10)
+                    return lambda:self.dam(i,power)
                 i=random.choice(tar_pool)
-                t=unit.arrow_to_u(i,act=d(i))
+                t=unit.arrow_to_u(i,act=d(i),set_model= arrow_model)
+                t.speed=speed
                 t.die_model=model.爆炸(20,0.2)
                 return t
-        super().__init__(life_time,cd=0.5,unit=gen)
+        super().__init__(life_time,cd=cd,unit=gen)
 
 #對臨近單位自爆
 #一般就带有power是造成伤害，如果填了func就会有特殊效果

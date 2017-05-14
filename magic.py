@@ -325,6 +325,23 @@ class 气球炸弹(magic):
             return t
         self.owner.add_ef(effect.unit_gen(t=6,cd=0.4,unit=unit_gen))
 
+
+#尽管最后的神风无法保护什么，却最令人怀念。
+class 神风(magic):
+    def __init__(self):
+        super().__init__()
+        self.name='玉碎「神风神风神风。」'
+        self.song_time=0.2
+        self.cost=1
+        self.cool_down=1
+    def act(self,x,y):
+        for i in range(8):
+            v=self.owner.v+vec(100,0).adjust_angle(3.14/4*i)
+            v2=vec(x,y)+vec(100,0).adjust_angle(3.14/4*i+3.14)
+            self.summon(unit.kamikaze(v2-v),x=v.x,y=v.y)
+
+
+
 #潘大爷与一条直线上的pannx用户连线，向他们传送亚〇娜的本子，使他们在欲望的驱使下以极大的速度向潘大爷靠近。
 #之所以对所有的单位都有效是因为panux是开源的23333
 class panux连线(magic):

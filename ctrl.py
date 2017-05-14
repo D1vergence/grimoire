@@ -1,7 +1,8 @@
 ﻿import effect
 import unit
-import random
+import hero
 
+import random
 rd = random.randint
 
 class player():
@@ -29,13 +30,13 @@ class player():
         except:
             None
         if n==1:
-            self.me=unit.bird()
+            self.me=hero.bird()
         if n==2:
-            self.me=unit.suin()
+            self.me=hero.suin()
         if n==3:
-            self.me=unit.rimo()
+            self.me=hero.rimo()
         if n==4:
-            self.me=unit.pandaye()
+            self.me=hero.pandaye()
         self.me.player=hash(self)
         unit.unit_pool.append(self.me)
         self.ctrler=ctrler(self.me)

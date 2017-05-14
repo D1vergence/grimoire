@@ -1,12 +1,13 @@
 ﻿import pygame
-import random
 import magic
 import model
-rd = random.randint
 from screen import screen
 import ev
 from tool import *
 import effect
+
+import random
+rd = random.randint
 
 unit_pool=my_list(None)
 
@@ -229,7 +230,8 @@ class decorator(abst_unit):
         abst_unit.time_pass(self,t)
         if len(self.model)==0: 
             self.die()
-        
+
+#箭矢
 class arrow(token):
     def __init__(self):
         super().__init__()
@@ -237,9 +239,11 @@ class arrow(token):
 
 #指向单位的箭矢
 class arrow_to_u(arrow):
-    def __init__(self,tar,act=lambda:0):
+    def __init__(self,tar,act=lambda:0,set_model=None):
         super().__init__()
-        self.model.append(model.晕眩())
+        if not set_model:
+            set_model = model.晕眩()
+        self.model.append(set_model)
         self.tar=tar
         self.act=act
     def time_pass(self,time):
@@ -282,65 +286,22 @@ class ship(real_unit):
         self.add_ef(effect.funnel())
         self.add_ef(effect.go233(r=1000,expect=2))
         self.add_ef(effect.limit_screen())
-        self.die_model=model.爆炸(r=70,t=0.4)        
+        self.die_model=model.爆炸(r=70,t=0.4)
+
+#神风
+class kamikaze(arrow_to_d, real_unit):
+    def __init__(self,v):
+        super().__init__(v,set_model=model.神风(),exact=True)
+        self.speed=600
+        self.maxhp=25
+        self.hp=25
+        de(self.effect,lambda x: type(x)==effect.magic_imm)     #神风并不是魔免的
+        self.add_ef(effect.funnel(arrow_model=model.直线(width=1),speed=550,cd=0.2,power=2))
+        self.add_ef(effect.bomb(r=-1,power=8, aoe=True, aoe_r=121))
+    def birth(self):
+        arrow_to_d.birth(self)
+        real_unit.birth(self)
+        
+        
         
 
-class hero(real_unit):
-    def __init__(self):
-        super().__init__()
-        self.set_v(rd(0,1366),rd(0,768))
-        self.speed=220
-        self.maxhp=300
-        self.hp=300
-        self.mana_rc=25
-        self.hp_rc=2
-        self.add_ef(effect.dam_imm(t=2))
-
-        self.model.append(model.头像(name=self.__class__.__name__))
-        
-        
-class bird(hero):
-    def __init__(self):
-        super().__init__()
-        self.speed=235
-        self.add_ef(effect.limit_screen())
-        # self.add_ef(effect.silence())
-        
-        self.magic.append(magic.光之矢())
-        self.magic.append(magic.虚伪的磐舟())
-        self.magic.append(magic.冰之矢())
-        self.magic.append(magic.若风一指())
-        
-        
-class suin(hero):
-    def __init__(self):
-        super().__init__()
-        
-        # self.add_ef(effect.fire(r=100,power=10))
-        # self.add_ef(effect.one_dam(r=100))
-        # self.add_ef(effect.vampire())
-        # self.add_ef(effect.silence())
-        
-        self.magic.append(magic.原谅光线())
-        self.magic.append(magic.星河漩涡())
-        self.magic.append(magic.闪现())
-        self.magic.append(magic.舰队())
-        
-        
-class rimo(hero):
-    def __init__(self):
-        super().__init__()
-        self.magic.append(magic.烈焰风暴())
-        self.magic.append(magic.沉默风暴())
-        self.magic.append(magic.闪电())
-        self.magic.append(magic.ghost_parade())
-        
-class pandaye(hero):
-    def __init__(self):
-        super().__init__()
-        self.magic.append(magic.轨道坠落())
-        self.magic.append(magic.断电导弹())
-        self.magic.append(magic.气球炸弹())
-        self.magic.append(magic.panux连线())
-        
-        
