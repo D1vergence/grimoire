@@ -75,24 +75,28 @@ class unit():
             i.time_pass(t)
 
 #发布指令(事件)
-#写法 cmd('干什么',x,y)
+#写法 cmd('干什么',*list)
 #         cmd(x,y) 默认是移动
 #         cmd(vec) 也可以把x,y用向量表示
-    def cmd(self,*d):
-        # print(x,y)
-        ev.ev(self,'_cmd',d)
-    def _cmd(self,d):
-        if type(d[0])!=str:
-            d=('move',*d)
-            
-        s=d[0]
-        if s=='hold':
+    def cmd(self,*li):
+        ev.ev(self,'_cmd',li)
+    def _cmd(self,li):
+        if type(li[0])!=str:
+            li=('move',*li)
+        
+        s=li[0]
+        if   s=='hold':
             self.now_cmd=('hold',None)
+            
         elif s=='move': 
-            if type(d[1])==vec:
-                self.now_cmd=('move',d[1])
+            if type(li[1])==vec:
+                self.now_cmd=('move',li[1])
             else:
-                self.now_cmd=('move',vec(d[1],d[2]))
+                self.now_cmd=('move',vec(li[1],li[2]))
+                
+        elif s=='cast':
+            ev.ev(self,'_cast',li[1],li[2],li[3])
+            
         else:
             raise BaseException('无法识别的命令')
 
@@ -132,7 +136,8 @@ class unit():
 
 #施法命令(事件)
     def cast(self,magic,x,y):
-        ev.ev(self,'_cast',magic,x,y)
+        self.cmd('cast',magic,x,y)
+    #中间会从cmd跳转一下
     def _cast(self,magic,x,y):
         magic.call(x,y)
 
