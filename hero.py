@@ -9,27 +9,29 @@ rd = random.randint
 class hero(unit.real_unit):
     def __init__(self):
         super().__init__()
-        self.set_v(rd(0,1366),rd(0,768))
         self.speed=220
-        self.maxhp=300
-        self.hp=300
-        self.mana_rc=25
+        self.maxhp=400
+        self.hp=400
+        self.mana_rc=10
         self.hp_rc=2
-        self.add_ef(effect.dam_imm(t=2))
+        self.add_ef(effect.dam_imm(t=3.3))
+        self.magic.append(magic.攻击())
+        self.size=20
 
         self.model.append(model.头像(name=self.__class__.__name__))
+    def die(self,damage):
+        unit.real_unit.die(self,damage)
         
         
 class bird(hero):
     def __init__(self):
         super().__init__()
-        self.speed=235
-        self.add_ef(effect.limit_screen())
+        self.speed=240
         
-        self.magic.append(magic.光之矢())
-        self.magic.append(magic.虚伪的磐舟())
-        self.magic.append(magic.冰之矢())
-        self.magic.append(magic.若风一指())
+        self.magic.append(magic.奥术鹰隼())
+        self.magic.append(magic.震荡光弹())
+        self.magic.append(magic.上古封印())
+        self.magic.append(magic.神秘之耀())
         
         
 class suin(hero):
@@ -46,8 +48,8 @@ class rimo(hero):
     def __init__(self):
         super().__init__()
         self.magic.append(magic.烈焰风暴())
-        self.magic.append(magic.沉默风暴())
-        self.magic.append(magic.闪电())
+        self.magic.append(magic.纸上城壁())
+        self.magic.append(magic.死者的叹息())
         self.magic.append(magic.ghost_parade())
         
 class pandaye(hero):

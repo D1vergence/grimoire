@@ -47,6 +47,14 @@ class model():
             self.draww(screen)
     def die(self):
         self.iki=False
+        
+class 叮(model):
+    def __init__(self,t=1.2):
+        super().__init__(t)
+        self.z_index=30
+    def draww(self,screen):
+        t=self.max_time-self.life_time
+        pygame.draw.rect(screen, (99,99,255), (self.x,self.y-t*50,10,10))
 
 class 方块(model):
     def __init__(self,t=99999999,r=20):
@@ -83,6 +91,18 @@ class 神风(model):
         pygame.draw.line(screen, self.color, (mid.x,mid.y),(mid.x-v1.x,mid.y-v1.y),3)
         pygame.draw.line(screen, self.color, (mid.x,mid.y),(mid.x-v2.x,mid.y-v2.y),3)
         
+class 鸟箭(model):
+    def __init__(self,t=99999999,l=15,color=(255,255,255)):
+        super().__init__(t)
+        self.l=l
+        self.color=color
+    def draww(self,screen):
+        v=self.face*self.l
+        v1=v.adjust_angle(0.6)
+        v2=v.adjust_angle(-0.6)
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v1.x,self.y-v1.y),3)
+        pygame.draw.line(screen, self.color, (self.x,self.y),(self.x-v2.x,self.y-v2.y),3)
+        
 class 箭头(model):
     def __init__(self,t=99999999,l=20,color=(255,255,255),width=3):
         super().__init__(t)
@@ -107,16 +127,25 @@ class 圆(model):
         pygame.draw.circle(screen,self.color,(int(self.x),int(self.y)),self.r,3)
         
 class 圆形(model):
-    def __init__(self,t=99999999,r=15):
+    def __init__(self,t=99999999,r=15,color=(255,255,255)):
         super().__init__(t)
         self.r=r
+        self.color=color
     def draww(self,screen):
         r=self.r
         t=self.max_time-self.life_time
         if t<0.4:
             r=int(t/0.4*r)
-        pygame.draw.circle(screen,[0,0,0],[int(self.x),int(self.y)],r+1)
-        pygame.draw.circle(screen,[255,255,255],[int(self.x),int(self.y)],abs(r))
+        pygame.draw.circle(screen,[0,0,0],[int(self.x),int(self.y)],abs(r)+1)
+        pygame.draw.circle(screen,self.color,[int(self.x),int(self.y)],abs(r))
+        
+class 石(model):
+    def __init__(self,t=99999999,r=15,color=(111,111,111)):
+        super().__init__(t)
+        self.r=r
+        self.color=color
+    def draww(self,screen):
+        pygame.draw.circle(screen,self.color,[int(self.x),int(self.y)],self.r)
 
 class 圆形消失(model):
     def __init__(self,t=99999999):
@@ -274,6 +303,17 @@ class 沉默(model):
         self.font_surface = self.font.render('黙', True, (255,255,255))
         screen.blit(self.font_surface, (self.x-20, self.y))
         
+class 伤害加深(model):
+    def __init__(self,t):
+        super().__init__(t)
+        self.z_index=22
+    def draww(self,screen):
+        self.font = pygame.font.SysFont('SimHei', 20)
+        self.font_surface = self.font.render('疼!', True, (0,0,0))
+        screen.blit(self.font_surface, (self.x-19, self.y-20))
+        self.font_surface = self.font.render('疼!', True, (255,255,255))
+        screen.blit(self.font_surface, (self.x-20, self.y-19))
+        
 class 减速(model):
     def __init__(self,t):
         super().__init__(t)
@@ -342,7 +382,6 @@ class 扩散白圈(model):
         else:
             n=1-self.life_time/self.max_time
         pygame.draw.circle(screen,(255,255,255),[int(self.x),int(self.y)],good(self.r*n),3)
-        
         
 class 爆炸(model):
     def __init__(self,r,t=99999999,color=(255,100,100)):

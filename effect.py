@@ -7,6 +7,7 @@ import unit
 import ev
 import damage
 import fantasy
+import map
 from screen import screen
 
 #基础效果
@@ -40,6 +41,26 @@ class effect(fantasy.fantasy):
             i.owner=self.owner
     def change(self,e):
         return e
+        
+class grav(effect):
+    def __init__(self,life_time=9999999,r=100,power=100):
+        super().__init__(life_time)
+        self.ignore_imm=True    #注意，光环效果本身当然无视魔免，但是光环施加的效果不一定
+        self.r=r
+        self.power=power
+        self.model.append(model.光环(r=r))
+    def time_pass(self,t):
+        effect.time_pass(self,t)
+        for i in unit.unit_pool:
+            if i is self.owner or i.imm():
+                continue
+            d=(i.v-self.owner.v).mo()
+            if d<self.r:
+                v=i.v-self.owner.v
+                v.normalize()
+                go=v*t*self.power*((self.r-d)/self.r)**0.7
+                i.v-=go 
+
 
 #火焰缠绕
 class fire(effect):
@@ -165,10 +186,21 @@ class stun(effect):
     def birth(self):
         self.owner.cmd('hold')
     def change(self,event):
-        if event.kind=='_cmd':
+        if event.kind=='_cmd' and event.arg[0][0]!='hold':
             return None
         return event
 
+#伤害加深
+class amp(effect):
+    def __init__(self,t,mult=0.5):
+        super().__init__(t)
+        self.model.append(model.伤害加深(t))
+        self.mult=mult
+    def change(self,event):
+        if event.kind=='_hurt':
+            event.arg[0].value*=1+self.mult
+        return event
+    
 #强制移动
 class forced_move(effect):
     def __init__(self,x=0,y=0,t=99999999):
@@ -216,8 +248,11 @@ class song(effect):
         effect.die(self)
     def change(self,event):
         if event.kind=='_cmd':
-            self.die(normal=False)
-            return event
+            if event.arg[0]=='hold':
+                self.die(normal=False)
+                return event
+            else:
+                return None
         return event
         
 #持续施法
@@ -245,21 +280,21 @@ class kill_out_screen(effect):
 
     def time_pass(self,time):
         effect.time_pass(self,time)
-        if not -200<self.owner.v.y<1000:
+        if not -200<self.owner.v.y<map.size[1]+200:
             self.owner.die()
-        if not -200<self.owner.v.x<1600:
+        if not -200<self.owner.v.x<map.size[0]+200:
             self.owner.die()
 
 #不能离开屏幕
-class limit_screen(effect):
-    def __init__(self):
-        super().__init__()
-        self.ignore_imm=True
+# class limit_screen(effect):
+    # def __init__(self):
+        # super().__init__()
+        # self.ignore_imm=True
 
-    def time_pass(self,time):
-        effect.time_pass(self,time)
-        self.owner.v.x=limit(self.owner.v.x,10,1356)
-        self.owner.v.y=limit(self.owner.v.y,10,758)
+    # def time_pass(self,time):
+        # effect.time_pass(self,time)
+        # self.owner.v.x=limit(self.owner.v.x,10,1356)
+        # self.owner.v.y=limit(self.owner.v.y,10,758)
 
 #走来走去233333
 class go233(effect):
@@ -315,22 +350,24 @@ class dam_imm(effect):
     
 #单位生成器
 class unit_gen(effect):
-    def __init__(self,t=9999999,cd=0.5,unit=lambda:0):
+    def __init__(self,t=9999999,cd=0.5,unit=lambda:0,mult=1):
         super().__init__(t)
         self.ignore_imm=True
         self.cd=cd
         self.cd_left=0
         self.unit=unit
+        self.mult=mult
     def time_pass(self,t):
         effect.time_pass(self,t)
         self.cd_left-=t
         if self.cd_left<0:
             self.cd_left+=self.cd
-            self.summon(self.unit())
+            for i in range(self.mult):
+                self.summon(self.unit())
 
 #浮游炮
 class funnel(unit_gen):
-    def __init__(self,life_time=9999999,r=200,arrow_model=None,speed=300,cd=0.5,power=10):
+    def __init__(self,life_time=9999999,r=200,arrow_model=lambda:None,speed=300,cd=0.5,power=10):
         self.r = r
         def gen():
             tar_pool=list(filter(lambda i: i.player!=self.owner.player 
@@ -341,7 +378,7 @@ class funnel(unit_gen):
                 def d(i):
                     return lambda:self.dam(i,power)
                 i=random.choice(tar_pool)
-                t=unit.arrow_to_u(i,act=d(i),set_model= arrow_model)
+                t=unit.arrow_to_u(i,act=d(i),set_model=arrow_model())
                 t.speed=speed
                 t.die_model=model.爆炸(20,0.2)
                 return t
@@ -350,7 +387,7 @@ class funnel(unit_gen):
 #對臨近單位自爆
 #一般就带有power是造成伤害，如果填了func就会有特殊效果
 class bomb(effect):
-    def __init__(self,life_time=9999999,r=200,power=30,aoe=False,aoe_r=400,func=lambda u:0):
+    def __init__(self,life_time=9999999,r=200,power=30,aoe=False,aoe_r=400,func=lambda u:0,self_func=lambda:0):
         super().__init__(life_time)
         self.r = r
         self.power = power
@@ -358,6 +395,7 @@ class bomb(effect):
         self.aoe=aoe
         self.aoe_r=aoe_r
         self.func=func
+        self.self_func=self_func
     def time_pass(self,t):
         effect.time_pass(self,t)
         for i in unit.unit_pool:
@@ -375,6 +413,7 @@ class bomb(effect):
                 if (self.owner.v-i.v).mo()<self.aoe_r:
                     self.dam(i,self.power)
                     self.func(i)
+        self.self_func()
         effect.die(self)
 
 #自动靠近敌人
@@ -401,3 +440,12 @@ class eat(effect):
     def die(self):
         self.eat_unit.set_v(self.owner.v)
         unit.unit_pool.append(self.eat_unit)
+
+#代行者
+#没有任何作用，含有这个效果的单位在被作为伤害来源时，damage类的方法可以通过该效果的master找到真正的伤害来源
+#比如炸弹人的雷造成的伤害遇到刃甲仍然会被反弹，这样的道理
+class agent(effect):
+    def __init__(self,t=9999999,master=None):
+        super().__init__(t)
+        self.ignore_imm=True
+        self.master=master

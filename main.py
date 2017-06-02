@@ -1,6 +1,5 @@
 ﻿import pygame
 from pygame.locals import *
-from sys import exit
 import random
 import pickle
 import copy
@@ -11,9 +10,10 @@ config.server_mode=True
 
 rd = random.randint
 from tool import *
+
+import map
 import unit
 import effect
-
 import ev
 import server
 import ctrl
@@ -30,12 +30,11 @@ if __name__=='__main__':
         model.model_pool=[]
 
         time_passed = clock.tick() / 1000
+        if time_passed>0.03:
+            time_passed=0.03 #保证刷新均匀
         time_log(time_passed)
-        if random.random()<time_passed/1:
-            if len(unit.unit_pool)<26:
-                t=unit.test_unit()
-                t.set_v(rd(0,1366),rd(0,768))
-                unit.unit_pool.append(t)
+        
+        map.time_pass(time_passed)
 
         for i in unit.unit_pool:
             i.time_pass(time_passed)

@@ -23,14 +23,8 @@ def server(address):
             player_pool[h]=you
 
         f_s=sock.recv(4)
-        if f_s==b'ct01':
-            you.set_hero(1)
-        if f_s==b'ct02':
-            you.set_hero(2)
-        if f_s==b'ct03':
-            you.set_hero(3)
-        if f_s==b'ct04':
-            you.set_hero(4)
+        if f_s[:2]==b'ct':
+            you.set_hero(int(f_s[2:4]))
 
         while True:
             s=sock.recv(13)
@@ -41,8 +35,9 @@ def server(address):
                 my_send(sock,pickle.dumps(you.info))
             if s[:3]==b'mov':
                 you.ctrler.mov(int(s[3:8]),int(s[8:13]))
-            if s[:3].isdigit():
-                you.ctrler.magic(int(s[:3]),int(s[3:8]),int(s[8:13]))
+            if s[:2]==b'mg':
+                # print(s[3:8])
+                you.ctrler.magic(chr(s[2]),int(s[3:8]),int(s[8:13]))
             if s[:3]==b'hod':
                 you.ctrler.hold()
                 

@@ -11,6 +11,7 @@ from tool import *
 import time
 import threading
 import config
+import map
 
 os.system('title 客户端')
 
@@ -66,7 +67,7 @@ def suc(p):
 
    
 model_pool=[]
-info=['',[],[0,0],[0,0]]
+info=['',[],[0,0],[0,0],0]
 
 #和服务器数据交换这地方我真不知道怎么写2333333
 def one_exchange(sock):
@@ -92,51 +93,80 @@ t = threading.Thread(target=exchange)
 t.setDaemon(True)
 t.start()
     
-
-
+def correct_lense(t):
+    t*=750
+    r,c=config.scr_size
+    x,y=(0,0)
+    if pygame.mouse.get_pos()[0]<20: x=1
+    if pygame.mouse.get_pos()[0]>r-21: x=-1
+    if pygame.mouse.get_pos()[1]<20: y=1
+    if pygame.mouse.get_pos()[1]>c-21: y=-1
+    global x_dif,y_dif
+    x_dif+=x*t
+    y_dif+=y*t
+    x_dif=limit(x_dif,config.scr_size[0]-map.size[0],0)
+    y_dif=limit(y_dif,config.scr_size[1]-map.size[1],0)
+    
+def correct_mouse():
+    l=list(pygame.mouse.get_pos())
+    l[0]-=int(x_dif)
+    l[1]-=int(y_dif)
+    return l
+    
+    
+x_dif,y_dif=(0,-3000)
+suf=pygame.Surface(map.size)
+s_map=pygame.Surface((200,200))
 while True:
-    time_log(clock.tick() / 1000)
+    time_pass=clock.tick() / 1000
+    time_log(time_pass)
     for event in pygame.event.get():
         if event.type == QUIT:
             exit()
         if event.type == MOUSEBUTTONDOWN:
-            data='mov'+suc(pygame.mouse.get_pos())
+            data='mov'+suc(correct_mouse())
+            # print(data.encode())
             sock2.send(data.encode())
         if event.type == KEYDOWN:
             data=''.ljust(13)
-            p = pygame.mouse.get_pos()
-            if event.key==ord('q'):
-                data='000'+suc(p)
-            if event.key==ord('w'):
-                data='001'+suc(p)
-            if event.key==ord('e'):
-                data='002'+suc(p)
-            if event.key==ord('r'):
-                data='003'+suc(p)
+            p = correct_mouse()
+            if event.key!=ord('s') and event.key<128:
+                data= 'mg'+chr(event.key) +suc(p)
+                # print(data)
             if event.key==ord('s'):
                 data='hod'+suc(p)
             sock2.send(data.encode())
 
-    screen.blit(background, (0,0))
-    
+    correct_lense(time_pass)
+    suf.blit(background, (0,0))
+    # suf.fill([0,0,0])
     for i in model_pool:
-        i.draww(screen)
+        i.draww(suf)
+
+    pygame.transform.scale(suf,(200,200), s_map)
+    # print()
+    screen.blit(suf, (x_dif,y_dif))
+    screen.blit(s_map, (0,0))
+
     # print(info)
-    write_word(info[0],600,680)
-    write_word('%d'%info[2][0],600,720,color=(255,150,150))
-    write_word('/',            640,720)
-    write_word('%d'%info[2][1],652,720,color=(255,150,150))
+    mid=config.scr_size[0]/2
+    write_word('exp:%d'%info[4],mid,config.scr_size[1]-85)
+    write_word('%d'%info[2][0],mid,   config.scr_size[1]-60,color=(255,150,150))
+    write_word('/',            mid+40,config.scr_size[1]-60)
+    write_word('%d'%info[2][1],mid+52,config.scr_size[1]-60,color=(255,150,150))
+
+    write_word('%d'%info[3][0],mid,   config.scr_size[1]-40,color=(170,170,255))
+    write_word('/',            mid+40,config.scr_size[1]-40)
+    write_word('%d'%info[3][1],mid+52,config.scr_size[1]-40,color=(170,170,255))
     
-    write_word('%d'%info[3][0],600,740,color=(170,170,255))
-    write_word('/',            640,740)
-    write_word('%d'%info[3][1],652,740,color=(170,170,255))
-    
-    x=1080
-    y=440
+    x=config.scr_size[0]-300
+    y=config.scr_size[1]-70*len(info[1])-40
     for i in info[1]:
         y+=40
         write_word(i[0],x,y)
         y+=30
         write_word(i[1],x,y,color=(162,162,255))
+        
+        
 
     pygame.display.update()

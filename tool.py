@@ -22,9 +22,10 @@ class vec():
         return (self.x**2+self.y**2)**0.5
     def normalize(self):    #规范化
         l=self.mo()
-        if l==0 : return 
+        if l==0 : return self
         self.x/=l
         self.y/=l
+        return self
     def ran_dif(self,n,gauss=False):    #随机偏移
         if gauss:
             return vec(self.x+random.gauss(0,n),self.y+random.gauss(0,n))
@@ -43,7 +44,10 @@ class vec():
     def __sub__(self,v2):
         return vec(self.x-v2[0],self.y-v2[1])
     def __eq__(self,v2):
-        return self.x==v2.x and self.y==v2.y
+        try:
+            return self.x==v2.x and self.y==v2.y
+        except:
+            return False
     def __getitem__(self, n):
         if n==0:
             return self.x
@@ -61,20 +65,61 @@ class my_list(list):
         super().__init__()
         self.owner=owner
     def append(self,x):
-        import effect,unit
+        import effect
         if isinstance(x,effect.effect):
             x.set_owner(self.owner)
         else:
             x.owner=self.owner
         list.append(self,x)
-        if isinstance(x,effect.effect) or isinstance(x,unit.unit):
+        if isinstance(x,effect.effect):
             x.birth()
     def __str__(self):
         return list.__str__(self)
+        
+class unit_list(list):
+    def __init__(self):
+        super().__init__()
+    def append(self,x):
+        import unit
+        list.append(self,x)
+        if not hasattr(x,'birthed'):
+            x.birth()
+            x.birthed=True
+    def __str__(self):
+        return list.__str__(self)
+        
+class magic_list(my_list): 
+    def __init__(self,owner):
+        super().__init__(owner)
+        self.key_alpha=['q','w','e','r','t','y','u','i','o']
+        self.dt=dict()
+    def append(self,x):
+        my_list.append(self,x)
+        if x.key==None:
+            x.key=self.good_key()
+        self.dt[x.key]=x
+    def good_key(self):
+        for i in self.key_alpha:
+            if not i in self.dt:
+                return i
+    def find(self,x):
+        if x in self.dt:
+            return self.dt[x]
+        return None
+    def replace(self,a,b):
+        o=self.find(a)
+        self.dt[a]=b
+        b.key=a
+        for i in range(len(self)):
+            if self[i] is o:
+                self[i]=b
+                b.owner=self.owner
+                break
+        return o
 
 a=[]
 all_t=0
-def time_log(t,server_mode=True):
+def time_log(t,server_mode=False):
     global all_t
     all_t+=t
     if len(a)<100:
@@ -86,7 +131,7 @@ def time_log(t,server_mode=True):
         all_t-=5
         n=(1/(sum(a)/len(a)))
         print('平均更新次数/s: %d，'%n,'最慢更新用时: %.3f。'%max(a))
-        if server_mode==n<80:
+        if server_mode and n<80:
             print('------------------------------')
             print('-----------性能警告-----------')
             print('在过去的1秒内只更新了%d次，'%n,'最慢更新用时: %.3f。'%max(a))

@@ -20,6 +20,8 @@ class fantasy():
         if t:
             u.add_ef(effect.kill_pass_time(t))
         u.set_v(x,y)
+        if isinstance(u,unit.token):
+            u.add_ef(effect.agent(master=self.owner))
         unit.unit_pool.append(u)
         return u
         
