@@ -4,6 +4,14 @@
 
 ![Alt text](https://github.com/RimoChan/grimoire/raw/master/sample.png)
 
+## 环境要求
+
++ windows | linux
+
++ python3
+
++ pip install pygame
+
 ## 关于各个文件: 
 
 - 「unit.py   」定义了单位的基本属性和除英雄外的单位。
