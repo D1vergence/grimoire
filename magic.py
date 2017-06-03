@@ -66,6 +66,38 @@ class 攻击(magic):
         t=self.summon(unit.arrow_to_u(target,act=lambda:self.dam(target,25),set_model=model.直线()))
         t.speed=800
         
+class 部署平定者(magic):
+    def __init__(self):
+        super().__init__()
+        self.cool_down=30
+        self.song_time=1.1
+        self.cost=120
+        self.ran=300
+    def act(self,x,y):
+        self.summon(unit.pacifier(),25,x,y)
+    
+class 平定者攻击(magic):
+    def __init__(self):
+        super().__init__()
+        self.cool_down=4.5
+        self.song_time=0
+        self.cost=0
+        self.ran=800
+        self.delay=2
+        self.r=50
+        self.power=30
+    def act(self,target):
+        x,y=(target.v.x,target.v.y)
+        self.summon(unit.decorator(model.圆(r=self.r,t=self.delay)),t=None,x=x,y=y)
+        def f():
+            def unit_gen():
+                t=self.summon(unit.arrow_to_d(vec(x+rd(-self.r//4*3,self.r//4*3),y+rd(-self.r//4*3,self.r//4*3))-self.owner.v,set_model=model.直线(width=1),exact=True))
+                t.speed=350
+                t.add_ef(effect.bomb(aoe=True,r=-1,aoe_r=self.r/4*3,power=self.power))
+                return t
+            self.owner.add_ef(effect.unit_gen(t=0.75,cd=0.15,unit=unit_gen))
+        self.owner.add_ef(effect.timer(self.delay,f))
+        
 class 冲击波(magic):
     def __init__(self):
         super().__init__()
@@ -151,7 +183,7 @@ class 烈焰风暴(magic):
         t.speed=400
         def f():
             t=self.summon(unit.token(),self.last_time,x,y)
-            t.add_ef(effect.fire(r=self.r,power=self.power))    
+            t.add_ef(effect.fire(r=self.r,power=self.power))
         t.add_ef(effect.bomb(r=-1,self_func=f ))
         
 class 焚己以终(烈焰风暴):

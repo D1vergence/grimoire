@@ -59,5 +59,6 @@ class pandaye(hero):
         self.magic.append(magic.断电导弹())
         self.magic.append(magic.神风())
         self.magic.append(magic.panux连线())
+        self.magic.append(magic.部署平定者())
         
         

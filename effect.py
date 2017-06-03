@@ -396,6 +396,9 @@ class bomb(effect):
         self.aoe_r=aoe_r
         self.func=func
         self.self_func=self_func
+    def birth(self):
+        if self.aoe:
+            self.owner.die_model=model.爆炸(self.aoe_r,0.2)
     def time_pass(self,t):
         effect.time_pass(self,t)
         for i in unit.unit_pool:
@@ -449,3 +452,17 @@ class agent(effect):
         super().__init__(t)
         self.ignore_imm=True
         self.master=master
+        
+class auto_cast(effect):
+    def __init__(self,t=9999999,magic=None):
+        super().__init__(t)
+        self.ignore_imm=True
+        self.magic=magic
+    def time_pass(self,t):
+        tar_pool=list(filter(lambda i: i.player!=self.owner.player 
+                                    and isinstance(i,unit.real_unit)
+                                    and (i.v-self.owner.v).mo()<self.magic.ran
+                        , unit.unit_pool))
+        if tar_pool:
+            i=random.choice(tar_pool)
+            self.owner.cast(self.magic,i.v.x,i.v.y)

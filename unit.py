@@ -344,6 +344,18 @@ class ship(real_unit):
         self.add_ef(effect.go233(r=1000,expect=2))
         # self.add_ef(effect.limit_screen())
         self.die_model=model.爆炸(r=70,t=0.4)
+        
+class pacifier(real_unit):
+    def __init__(self):
+        super().__init__()
+        self.speed=0
+        self.maxhp=300
+        self.hp=300
+        self.model.append(model.方块(r=20))
+        m=magic.平定者攻击()
+        self.magic.append(m)
+        self.add_ef(effect.auto_cast( magic=m ))
+        self.die_model=model.爆炸(r=70,t=0.4)
 
 class tower(real_unit):
     def __init__(self):
